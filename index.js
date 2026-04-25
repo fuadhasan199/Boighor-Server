@@ -56,6 +56,20 @@ app.get('/books/:id',async(req,res)=>{
      const query={_id:new ObjectId(id)}
      const result=await BoighorCollection.findOne(query)
      res.send(result)
+}) 
+
+
+app.post('/user',async(req,res)=>{
+    const user=req.body 
+    const query={email:user.email}
+    const existingUser=await BoighorCollection.findOne(query)
+     if(existingUser){
+       res.send({message:"user already exist"})
+     } 
+     else{
+       const result=await BoighorCollection.insertOne(user) 
+       res.send(result)
+     }
 })
 
 
