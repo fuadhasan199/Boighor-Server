@@ -20,13 +20,16 @@ const client = new MongoClient(uri, {
 });
 
 let BoighorCollection; 
+let userCollection
+let cartCollection
 
 async function run() {
   try {
     await client.connect();
     const BoighorDB = client.db('BoighorDB');
     BoighorCollection = BoighorDB.collection('BoighorCollection');
-    
+    userCollection=BoighorDB.collection('users')
+    cartCollection=BoighorDB.collection('cart')
     console.log("MongoDB Connected Successfully!");
   } catch (error) {
     console.error("MongoDB Connection Failed:", error);
@@ -62,14 +65,34 @@ app.get('/books/:id',async(req,res)=>{
 app.post('/user',async(req,res)=>{
     const user=req.body 
     const query={email:user.email}
-    const existingUser=await BoighorCollection.findOne(query)
+    const existingUser=await userCollection.findOne(query)
      if(existingUser){
-       res.send({message:"user already exist"})
+       res.send({message:"user already exist"}) 
      } 
      else{
-       const result=await BoighorCollection.insertOne(user) 
+       const result=await userCollection.insertOne(user) 
        res.send(result)
      }
+}) 
+
+app.post('/cart',async(req,res)=>{
+    const item=req.body 
+    const existingItem=await cartCollection.findOne({
+        email:item.email,
+        bookId:item.bookId
+    }) 
+ if(existingItem){
+    res.send({message:"item already exists"})
+ } 
+ const result=await cartCollection.insertOne(item)
+ res.send(result)
+
+}) 
+
+app.get('/cart',async(req,res)=>{
+     const email=req.query.email 
+     const result=await cartCollection.find({email}).toArray() 
+     res.send(result)
 })
 
 
