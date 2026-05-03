@@ -79,7 +79,7 @@ app.post('/cart',async(req,res)=>{
     const item=req.body 
     const existingItem=await cartCollection.findOne({
         email:item.email,
-        bookId:item.bookId
+        productId: item.productId
     }) 
  if(existingItem){
     res.send({message:"item already exists"})
@@ -93,6 +93,18 @@ app.get('/cart',async(req,res)=>{
      const email=req.query.email 
      const result=await cartCollection.find({email}).toArray() 
      res.send(result)
+}) 
+
+// admin check api 
+app.get('/user/admin/:email',async(req,res)=>{
+     const email=req.params.email 
+     const user=await userCollection.findOne({email:email})
+      let isAdmin=false 
+        if(user){
+           isAdmin=user.role ==='admin'
+        } 
+        res.send({admin:isAdmin})
+   
 })
 
 
