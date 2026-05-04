@@ -96,7 +96,7 @@ app.get('/cart',async(req,res)=>{
 }) 
 
 // admin check api 
-app.get('/user/admin/:email',async(req,res)=>{
+app.get(`/users/admin/:email`,async(req,res)=>{
      const email=req.params.email 
      const user=await userCollection.findOne({email:email})
       let isAdmin=false 
