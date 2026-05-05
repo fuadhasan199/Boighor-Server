@@ -75,6 +75,11 @@ app.post('/user',async(req,res)=>{
      }
 }) 
 
+app.get('/user',async(req,res)=>{
+     const user=await userCollection.find().toArray() 
+     res.send(user)
+})
+
 app.post('/cart',async(req,res)=>{
     const item=req.body 
     const existingItem=await cartCollection.findOne({
@@ -105,7 +110,9 @@ app.get(`/users/admin/:email`,async(req,res)=>{
         } 
         res.send({admin:isAdmin})
    
-})
+}) 
+
+
 
 
 
