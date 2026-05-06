@@ -78,7 +78,19 @@ app.post('/user',async(req,res)=>{
 app.get('/user',async(req,res)=>{
      const user=await userCollection.find().toArray() 
      res.send(user)
+}) 
+
+app.get('/user/:id',async(req,res)=>{
+   const id=req.params.id 
+   const {status}=req.body
+   const result=await userCollection.updateOne({_id:new ObjectId(id)},
+  {$set:{status:status}}
+  ) 
+  res.send(result)
+    
 })
+
+
 
 app.post('/cart',async(req,res)=>{
     const item=req.body 
