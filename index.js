@@ -66,7 +66,34 @@ app.delete('/books/:id',async(req,res)=>{
      const query={_id:new ObjectId(id)} 
      const result=await BoighorCollection.deleteOne(query)
      res.send(result)
+}) 
+
+app.patch('/books/:id',async(req,res)=>{
+    const id=req.params.id 
+    const updatedData=req.body 
+    const query=-{_id:new ObjectId(id)} 
+    const updateDoc={
+       $set:{
+          
+           title:updatedData.title,
+           author:updatedData.author,
+           category:updatedData.category,
+           price:updatedData.price,
+           discountPrice:updatedData.discountPrice,
+          stock:updatedData.stock,
+          image:updatedData.image,
+          shortDescription:updatedData.shortDescription,
+          description:updatedData.description
+
+       } 
+
+    } 
+
+    const result=await BoighorCollection.updateOne(updateDoc,query)
+    res.send(result)
 })
+
+
 
 app.post('/user',async(req,res)=>{
     const user=req.body 
