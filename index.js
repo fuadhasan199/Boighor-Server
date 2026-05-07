@@ -61,6 +61,12 @@ app.get('/books/:id',async(req,res)=>{
      res.send(result)
 }) 
 
+app.post('/books',async(req,res)=>{
+    const book=req.body 
+    const result=await BoighorCollection.insertOne(book)
+    res.send(result)
+})
+
 app.delete('/books/:id',async(req,res)=>{
     const id=req.params.id 
      const query={_id:new ObjectId(id)} 
