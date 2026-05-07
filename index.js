@@ -71,7 +71,7 @@ app.delete('/books/:id',async(req,res)=>{
 app.patch('/books/:id',async(req,res)=>{
     const id=req.params.id 
     const updatedData=req.body 
-    const query=-{_id:new ObjectId(id)} 
+    const query={_id:new ObjectId(id)} 
     const updateDoc={
        $set:{
           
@@ -89,7 +89,7 @@ app.patch('/books/:id',async(req,res)=>{
 
     } 
 
-    const result=await BoighorCollection.updateOne(updateDoc,query)
+    const result=await BoighorCollection.updateOne(query,updateDoc)
     res.send(result)
 })
 
