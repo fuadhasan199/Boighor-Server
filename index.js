@@ -61,6 +61,12 @@ app.get('/books/:id',async(req,res)=>{
      res.send(result)
 }) 
 
+app.delete('/books/:id',async(req,res)=>{
+    const id=req.params.id 
+     const query={_id:new ObjectId(id)} 
+     const result=await BoighorCollection.deleteOne(query)
+     res.send(result)
+})
 
 app.post('/user',async(req,res)=>{
     const user=req.body 
@@ -72,7 +78,8 @@ app.post('/user',async(req,res)=>{
      else{
        const result=await userCollection.insertOne(user) 
        res.send(result)
-     }
+     } 
+    
 }) 
 
 app.get('/user',async(req,res)=>{
@@ -80,7 +87,7 @@ app.get('/user',async(req,res)=>{
      res.send(user)
 }) 
 
-app.get('/user/:id',async(req,res)=>{
+app.patch('/user/:id',async(req,res)=>{
    const id=req.params.id 
    const {status}=req.body
    const result=await userCollection.updateOne({_id:new ObjectId(id)},
