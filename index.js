@@ -93,7 +93,8 @@ app.patch('/books/:id',async(req,res)=>{
 
        } 
 
-    } 
+    }  
+
 
     const result=await BoighorCollection.updateOne(query,updateDoc)
     res.send(result)
@@ -151,6 +152,13 @@ app.get('/cart',async(req,res)=>{
      const result=await cartCollection.find({email}).toArray() 
      res.send(result)
 }) 
+
+app.delete('/cart/:id',async(req,res)=>{
+    const id=req.params.id 
+    const query={_id:new ObjectId(id)}
+    const result=await cartCollection.deleteOne(query)
+    res.send(result)
+})
 
 // admin check api 
 app.get(`/users/admin/:email`,async(req,res)=>{
