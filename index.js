@@ -22,6 +22,7 @@ const client = new MongoClient(uri, {
 let BoighorCollection; 
 let userCollection
 let cartCollection
+let orderCollection
 
 async function run() {
   try {
@@ -30,6 +31,7 @@ async function run() {
     BoighorCollection = BoighorDB.collection('BoighorCollection');
     userCollection=BoighorDB.collection('users')
     cartCollection=BoighorDB.collection('cart')
+    orderCollection=BoighorDB.collection('orders')
     console.log("MongoDB Connected Successfully!");
   } catch (error) {
     console.error("MongoDB Connection Failed:", error);
@@ -158,7 +160,21 @@ app.delete('/cart/:id',async(req,res)=>{
     const query={_id:new ObjectId(id)}
     const result=await cartCollection.deleteOne(query)
     res.send(result)
+}) 
+
+app.post('/orders',async(req,res)=>{
+    const order=req.body 
+    const result=await orderCollection.insertOne(order)
+     const query={email:order.email}
+     await cartCollection.deleteMany(query)
+     res.send(result)
+
+
 })
+
+
+
+
 
 // admin check api 
 app.get(`/users/admin/:email`,async(req,res)=>{
