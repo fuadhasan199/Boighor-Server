@@ -177,7 +177,8 @@ app.post('/orders',async(req,res)=>{
 // payment releted apies 
 app.post('/create-checkout-session',async(req,res)=>{
       const payment=req.body 
-      const amount=payment.price*100
+      const amount=payment.totalPrice*100 
+ const productName = payment.cartItems?.map(item => item.title).join(', ') || 'Order';
        const session=await stripe.checkout.sessions.create({
            line_items: [
       {
@@ -186,8 +187,7 @@ app.post('/create-checkout-session',async(req,res)=>{
            currency:"bdt",
            unit_amount:amount,
             product_data:{
-               name:payment.productName,
-
+               name:productName
             }
         },
         quantity: 1,
