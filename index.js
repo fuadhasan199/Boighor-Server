@@ -1,7 +1,9 @@
+
+require('dotenv').config(); 
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_KEY)
 
 const app = express();
 const port = 3000;
@@ -170,8 +172,72 @@ app.post('/orders',async(req,res)=>{
      res.send(result)
 
 
+}) 
+
+// payment releted apies 
+app.post('/create-checkout-session',async(req,res)=>{
+      const payment=req.body 
+      const amount=payment.price*100
+       const session=await stripe.checkout.sessions.create({
+           line_items: [
+      {
+        
+        price_data: {
+           currency:"bdt",
+           unit_amount:amount,
+            product_data:{
+               name:payment.productName,
+
+            }
+        },
+        quantity: 1,
+      },
+    
+    ],
+    mode: 'payment',
+    success_url: `${process.env.SITE_URL}?success=true`,
+    cancel_url: `${process.env.SITE_URL}?success=cancel`,
+
+
+
+
+
+       })  
+        console.log(session)
+        res.send({url:session.url})
 })
 
+app.post('/cash-on-delivery', async (req, res) => {
+
+  try {
+
+    const order = req.body;
+
+    const result = await orderCollection.insertOne({
+      ...order,
+      paymentMethod: "cod",
+      paymentStatus: "pending",
+      createdAt: new Date()
+    });
+
+    await cartCollection.deleteMany({
+      email: order.email
+    });
+
+    res.send({
+      success: true,
+      insertedId: result.insertedId
+    });
+
+  } catch (error) {
+
+    res.status(500).send({
+      error: error.message
+    });
+
+  }
+
+});
 
 
 
