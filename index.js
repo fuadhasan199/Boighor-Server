@@ -172,7 +172,17 @@ app.post('/orders',async(req,res)=>{
      res.send(result)
 
 
-}) 
+})  
+
+app.get('/orders',async(req,res)=>{
+     const email=req.query.email 
+     if (!email) {
+        return res.status(400).send({ message: "Email is required" });
+    }
+    const result=await orderCollection.find({email}).toArray()
+    res.send(result) 
+})
+
 
 // payment releted apies 
 app.post('/create-checkout-session',async(req,res)=>{
@@ -204,7 +214,7 @@ app.post('/create-checkout-session',async(req,res)=>{
         },
     mode: 'payment',
     success_url:`${process.env.SITE_URL}/dashboard/Success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url:`${process.env.SITE_URL}/dashboard/Cancel`,
+    
 
 
 
@@ -218,7 +228,7 @@ app.post('/create-checkout-session',async(req,res)=>{
 app.get('/verify-payment', async (req, res) => {
     const { session_id } = req.query;
     try {
-        // Stripe theke session retrieve kora hoche metadata soho
+        
         const session = await stripe.checkout.sessions.retrieve(session_id); 
         
        
