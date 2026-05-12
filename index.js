@@ -125,6 +125,24 @@ app.get('/user',async(req,res)=>{
      res.send(user)
 }) 
 
+app.get('/user-stats',async(req,res)=>{
+    const email=req.query.email 
+    if (!email) return res.status(400).send({ message: "Email is required" }) 
+      try{
+            const totalOrders = await orderCollection.countDocuments({ email }) 
+            const spendResult=await orderCollection.aggregate([
+            { $match: { email: email, paymentStatus: 'paid' } },
+            { $group: { _id: null, total: { $sum: "$totalPrice" } } }
+            ]).toArray() 
+            const totalSpent =spendResult.length >0 ? spendResult[0].total : 0 
+            res.send({totalOrders,totalSpent})
+        
+      } 
+      catch(error){
+         res.status(500).send({message:"Failed",error:error.message})
+      }
+})
+
 app.patch('/user/:id',async(req,res)=>{
    const id=req.params.id 
    const {status}=req.body
