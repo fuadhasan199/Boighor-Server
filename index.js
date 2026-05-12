@@ -1,7 +1,19 @@
 
 require('dotenv').config(); 
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); 
+const admin=require('firebase-admin') 
+const serviceAccount=require('./Firebase-Admin/boighor.json') 
+
+
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+}); 
+
+const verifyToken=require('./middleware/verifyFirebaseToken')
+
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const stripe = require('stripe')(process.env.STRIPE_KEY)
 
@@ -19,7 +31,10 @@ const client = new MongoClient(uri, {
     strict: true,
     deprecationErrors: true,
   }
-});
+}); 
+
+
+
 
 let BoighorCollection; 
 let userCollection
