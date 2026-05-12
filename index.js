@@ -193,10 +193,18 @@ app.post('/create-checkout-session',async(req,res)=>{
         quantity: 1,
       },
     
-    ],
+    ], 
+            metadata: {
+            customerName: payment.customerName,
+            phone: payment.phone,
+            address: payment.address,
+            email: payment.email,
+            
+            cartIds: JSON.stringify(payment.cartItems.map(item => item._id))
+        },
     mode: 'payment',
-    success_url: `${process.env.SITE_URL}?success=true`,
-    cancel_url: `${process.env.SITE_URL}?success=cancel`,
+    success_url:`${process.env.SITE_URL}/dashboard/Success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url:`${process.env.SITE_URL}/dashboard/Cancel`,
 
 
 
@@ -205,7 +213,61 @@ app.post('/create-checkout-session',async(req,res)=>{
        })  
         console.log(session)
         res.send({url:session.url})
-})
+}) 
+
+app.get('/verify-payment', async (req, res) => {
+    const { session_id } = req.query;
+    try {
+        // Stripe theke session retrieve kora hoche metadata soho
+        const session = await stripe.checkout.sessions.retrieve(session_id); 
+        
+       
+
+
+
+
+
+        if (session.payment_status === 'paid') { 
+         const existingOrder = await orderCollection.findOne({ 
+                transactionId: session.payment_intent 
+            }); 
+            if (existingOrder) {
+                return res.send({ success: true, message: "Order already saved" });
+            }
+
+
+
+            const orderData = {
+                customerName: session.metadata.customerName,
+                email: session.metadata.email,
+                phone: session.metadata.phone,
+                address: session.metadata.address,
+                totalPrice: session.amount_total / 100,
+                paymentMethod: 'online',
+                paymentStatus: 'paid',
+                transactionId: session.payment_intent,
+                createdAt: new Date(),
+               
+                cartItems: JSON.parse(session.metadata.cartIds || "[]")
+            };
+
+           
+            const result = await orderCollection.insertOne(orderData);
+            
+         
+            await cartCollection.deleteMany({ email: session.metadata.email });
+
+            res.send({ success: true, result });
+        } else {
+            res.send({ success: false, message: "Payment not verified" });
+        }
+    } catch (error) {
+        console.error("Verification Error:", error);
+        res.status(500).send({ success: false, error: error.message });
+    }
+});
+
+
 
 app.post('/cash-on-delivery', async (req, res) => {
 
@@ -237,7 +299,20 @@ app.post('/cash-on-delivery', async (req, res) => {
 
   }
 
-});
+}); 
+
+// save order 
+app.post('/save-order',async(req,res)=>{
+    const orderData=req.body 
+    const result=await orderCollection.insertOne({
+       ...orderData,
+        paymentMethod:'online',
+        paymentStatus:'paid', 
+        createdAt:new Date() 
+
+    }) 
+    res.send(result)
+})
 
 
 
