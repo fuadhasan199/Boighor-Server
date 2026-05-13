@@ -33,6 +33,17 @@ const client = new MongoClient(uri, {
   }
 }); 
 
+const verifyAdmin=async(req,res,next)=>{
+     const email=req.decoded.email 
+     const user=await userCollection.findOne({email:email}) 
+        if(user?.role !== 'admin'){
+      return res.status(403).send({
+         message:'Forbidden Access'
+      }) 
+    } 
+    next()
+}
+
 
 
 
@@ -80,8 +91,11 @@ app.get('/books/:id',async(req,res)=>{
      res.send(result)
 }) 
 
-app.post('/books',async(req,res)=>{
+app.post('/books',verifyToken,async(req,res)=>{
     const book=req.body 
+    if(req.decoded.email !==book.email){
+      return res.status(403).send({message:"Forbidden Access"})
+    }
     const result=await BoighorCollection.insertOne(book)
     res.send(result)
 })
@@ -121,8 +135,11 @@ app.patch('/books/:id',async(req,res)=>{
 
 
 
-app.post('/user',async(req,res)=>{
+app.post('/user',verifyToken, async(req,res)=>{
     const user=req.body 
+    if(req.decoded.email !==user.email){
+       return res.status(403).send({message:"Forbidden Access"})
+    }
     const query={email:user.email}
     const existingUser=await userCollection.findOne(query)
      if(existingUser){
@@ -135,13 +152,18 @@ app.post('/user',async(req,res)=>{
     
 }) 
 
-app.get('/user',async(req,res)=>{
+app.get('/user',verifyToken,async(req,res)=>{ 
+    const email=req.query.email
+    
      const user=await userCollection.find().toArray() 
      res.send(user)
 }) 
 
-app.get('/user-stats',async(req,res)=>{
+app.get('/user-stats',verifyToken,async(req,res)=>{
     const email=req.query.email 
+    if(email !== req.decoded.email){
+       return res.status(403).send({message:"Forbidden Access"})
+    }
     if (!email) return res.status(400).send({ message: "Email is required" }) 
       try{
             const totalOrders = await orderCollection.countDocuments({ email }) 
@@ -158,7 +180,7 @@ app.get('/user-stats',async(req,res)=>{
       }
 })
 
-app.patch('/user/:id',async(req,res)=>{
+app.patch('/user/:id',verifyToken,verifyAdmin,async(req,res)=>{
    const id=req.params.id 
    const {status}=req.body
    const result=await userCollection.updateOne({_id:new ObjectId(id)},
@@ -184,8 +206,11 @@ app.post('/cart',async(req,res)=>{
 
 }) 
 
-app.get('/cart',async(req,res)=>{
+app.get('/cart',verifyToken,async(req,res)=>{
      const email=req.query.email 
+     if(email !== req.decoded.email){
+       return res.status(403).send({message:"Forbidden Access"})
+     }
      const result=await cartCollection.find({email}).toArray() 
      res.send(result)
 }) 
@@ -209,12 +234,13 @@ app.post('/orders',async(req,res)=>{
 
 app.get('/orders',async(req,res)=>{
      const email=req.query.email 
+     
      if (!email) {
         return res.status(400).send({ message: "Email is required" });
     }
     const result=await orderCollection.find({email}).toArray()
     res.send(result) 
-})
+}) 
 
 
 // payment releted apies 
@@ -361,8 +387,11 @@ app.post('/save-order',async(req,res)=>{
 
 
 // admin check api 
-app.get(`/users/admin/:email`,async(req,res)=>{
+app.get(`/users/admin/:email`,verifyToken,async(req,res)=>{
      const email=req.params.email 
+     if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'Forbidden access' });
+    }
      const user=await userCollection.findOne({email:email})
       let isAdmin=false 
         if(user){
