@@ -7,7 +7,10 @@ const verifyToken = async(req,res,next)=>{
       }
       const token=authHeader.split(" ")[1] 
 
-      try{
+      try{ 
+          if (admin.apps.length === 0) {
+       return res.status(500).send({ message: "Firebase Admin not initialized" });
+    }
            const decodedToken=await admin.auth().verifyIdToken(token) 
            req.decoded=decodedToken 
            next()
